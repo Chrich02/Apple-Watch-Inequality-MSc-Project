@@ -35,6 +35,12 @@ print("\n--- Paired T-test (AW vs FB) ---")
 print(f"T-statistic: {t_stat:.4f}")
 print(f"P-value: {p_value_ttest:.4f}")
 
+# Calculate Cohen's d for paired t-test
+mean_diff = df_pivoted['HR_diff'].mean()
+std_diff = df_pivoted['HR_diff'].std()
+cohen_d = mean_diff / std_diff
+print(f"Cohen's d: {cohen_d:.4f}")
+
 # 5. ANOVA
 # For gender, it's a binary categorical variable
 print("\n--- ANOVA: HR_diff vs Gender ---")
@@ -42,8 +48,13 @@ model_gender = ols('HR_diff ~ C(gender)', data=df_pivoted).fit()
 anova_gender = anova_lm(model_gender, typ=2)
 print(anova_gender)
 
-# For BMI and age, convert the continuous data into categories for ANOVA
+# Calculate eta-squared for gender
+ss_gender = anova_gender['sum_sq']['C(gender)']
+ss_residual_gender = anova_gender['sum_sq']['Residual']
+eta_squared_gender = ss_gender / (ss_gender + ss_residual_gender)
+print(f"Eta-squared ($\eta^2$): {eta_squared_gender:.4f}")
 
+# For BMI and age, convert the continuous data into categories for ANOVA
 df_pivoted['BMI_group'] = pd.qcut(df_pivoted['BMI'], q=2, labels=['Low BMI', 'High BMI'])
 df_pivoted['age_group'] = pd.qcut(df_pivoted['age'], q=2, labels=['Young', 'Old'])
 
@@ -53,8 +64,20 @@ model_bmi = ols('HR_diff ~ C(BMI_group)', data=df_pivoted).fit()
 anova_bmi = anova_lm(model_bmi, typ=2)
 print(anova_bmi)
 
+# Calculate eta-squared for BMI group
+ss_bmi = anova_bmi['sum_sq']['C(BMI_group)']
+ss_residual_bmi = anova_bmi['sum_sq']['Residual']
+eta_squared_bmi = ss_bmi / (ss_bmi + ss_residual_bmi)
+print(f"Eta-squared ($\eta^2$): {eta_squared_bmi:.4f}")
+
 # ANOVA for age group
 print("\n--- ANOVA: HR_diff vs Age Group ---")
 model_age = ols('HR_diff ~ C(age_group)', data=df_pivoted).fit()
 anova_age = anova_lm(model_age, typ=2)
 print(anova_age)
+
+# Calculate eta-squared for age group
+ss_age = anova_age['sum_sq']['C(age_group)']
+ss_residual_age = anova_age['sum_sq']['Residual']
+eta_squared_age = ss_age / (ss_age + ss_residual_age)
+print(f"Eta-squared ($\eta^2$): {eta_squared_age:.4f}")
